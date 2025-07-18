@@ -18,7 +18,7 @@ interface QaPanelProps {
 
 export function QaPanel({ qaPairs, isLoading }: QaPanelProps) {
   const groupedQAs = qaPairs.reduce((acc, qa) => {
-    const category = qa.category || "Uncategorized";
+    const category = qa.category || "Non Categorizzato";
     if (!acc[category]) {
       acc[category] = [];
     }
@@ -31,7 +31,7 @@ export function QaPanel({ qaPairs, isLoading }: QaPanelProps) {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
             <MessageSquareQuote className="h-5 w-5" />
-            Identified Q&A
+            D&R Identificate
         </CardTitle>
         {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
       </CardHeader>
@@ -62,7 +62,7 @@ export function QaPanel({ qaPairs, isLoading }: QaPanelProps) {
           </Accordion>
         ) : (
           <div className="text-center text-muted-foreground py-8">
-            <p>No questions and answers identified yet.</p>
+            <p>Nessuna domanda e risposta ancora identificata.</p>
           </div>
         )}
       </CardContent>

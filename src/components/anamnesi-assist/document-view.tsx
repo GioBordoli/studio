@@ -32,9 +32,9 @@ export function DocumentView({ documentText, open, onOpenChange }: DocumentViewP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Formatted Medical Document</DialogTitle>
+          <DialogTitle>Documento Medico Formattato</DialogTitle>
           <DialogDescription>
-            This is the generated document based on the anamnesis session.
+            Questo è il documento generato sulla base della sessione di anamnesi.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] rounded-md border p-4">
@@ -49,10 +49,10 @@ export function DocumentView({ documentText, open, onOpenChange }: DocumentViewP
             ) : (
                 <Clipboard className="mr-2 h-4 w-4" />
             )}
-            {hasCopied ? "Copied!" : "Copy to Clipboard"}
+            {hasCopied ? "Copiato!" : "Copia negli Appunti"}
           </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            Chiudi
           </Button>
         </DialogFooter>
       </DialogContent>

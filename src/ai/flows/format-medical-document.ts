@@ -14,14 +14,14 @@ import {z} from 'genkit';
 const FormatMedicalDocumentInputSchema = z.object({
   interviewData: z
     .string()
-    .describe("The interview data containing questions and answers."),
+    .describe("I dati del colloquio contenenti domande e risposte."),
 });
 export type FormatMedicalDocumentInput = z.infer<typeof FormatMedicalDocumentInputSchema>;
 
 const FormatMedicalDocumentOutputSchema = z.object({
   formattedDocument: z
     .string()
-    .describe("The formatted medical document with questions and answers."),
+    .describe("Il documento medico formattato con domande e risposte."),
 });
 export type FormatMedicalDocumentOutput = z.infer<typeof FormatMedicalDocumentOutputSchema>;
 
@@ -35,15 +35,15 @@ const prompt = ai.definePrompt({
   name: 'formatMedicalDocumentPrompt',
   input: {schema: FormatMedicalDocumentInputSchema},
   output: {schema: FormatMedicalDocumentOutputSchema},
-  prompt: `You are an expert medical document formatter.
+  prompt: `Sei un esperto formattatore di documenti medici.
 
-You will receive interview data containing questions and answers from a medical consultation.
-Your task is to format this data into a professional-quality medical document with clear questions and answers in a structured, easily-readable manner.
+Riceverai i dati di un colloquio contenenti domande e risposte di una consultazione medica.
+Il tuo compito è formattare questi dati in un documento medico di qualità professionale con domande e risposte chiare in modo strutturato e facilmente leggibile.
 
-Interview Data:
+Dati del colloquio:
 {{{interviewData}}}
 
-Formatted Medical Document:
+Documento Medico Formattato:
 `,
 });
 

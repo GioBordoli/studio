@@ -46,7 +46,7 @@ export default function Home() {
       setLoading((prev) => ({ ...prev, document: true }));
       try {
         const interviewData = qaPairs
-          .map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`)
+          .map((qa) => `D: ${qa.question}\nR: ${qa.answer}`)
           .join("\n\n");
         const result = await formatMedicalDocument({ interviewData });
         setDocumentText(result.formattedDocument);
@@ -70,7 +70,7 @@ export default function Home() {
       const suggestionsPromise = suggestAdditionalQuestions({
         transcript: currentTranscript,
         answeredQuestions: qaPairs.map((qa) => qa.question),
-        screeningSection: "General", // Placeholder for dynamic section
+        screeningSection: "Generale", // Placeholder for dynamic section
       });
 
       const [qaResult, suggestionsResult] = await Promise.all([
@@ -132,11 +132,11 @@ export default function Home() {
         </div>
       </main>
       <footer className="container mx-auto p-4 text-center text-muted-foreground text-sm">
-        <p>AnamnesiAssist - Your AI-powered medical assistant.</p>
+        <p>AnamnesiAssist - Il tuo assistente medico basato sull'IA.</p>
         {loading.document && (
           <div className="flex items-center justify-center mt-2">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <span>Generating document...</span>
+            <span>Generazione del documento in corso...</span>
           </div>
         )}
       </footer>

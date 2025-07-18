@@ -103,7 +103,7 @@ export function AudioRecorder({ isRecording, onStart, onStop, onAudioChunk }: Au
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Recording Control</CardTitle>
+        <CardTitle>Controllo Registrazione</CardTitle>
         <div className="flex items-center gap-4">
           {!isRecording ? (
             <Button onClick={onStart} disabled={isInitializing}>
@@ -112,19 +112,19 @@ export function AudioRecorder({ isRecording, onStart, onStop, onAudioChunk }: Au
               ) : (
                 <Mic className="mr-2 h-4 w-4" />
               )}
-              Start Recording
+              Inizia a Registrare
             </Button>
           ) : (
             <Button onClick={onStop} variant="destructive">
               <StopCircle className="mr-2 h-4 w-4" />
-              Stop Recording
+              Interrompi Registrazione
             </Button>
           )}
         </div>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-4">
-          <div className="font-medium text-sm w-28">Audio Level</div>
+          <div className="font-medium text-sm w-28">Livello Audio</div>
           <div className="w-full h-4 bg-muted rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-100 ${getBarColor()}`}

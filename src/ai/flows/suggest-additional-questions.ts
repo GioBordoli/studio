@@ -14,13 +14,13 @@ import {z} from 'genkit';
 const SuggestAdditionalQuestionsInputSchema = z.object({
   transcript: z
     .string()
-    .describe('The current transcript of the anamnesis session.'),
+    .describe('La trascrizione corrente della sessione di anamnesi.'),
   answeredQuestions: z
     .array(z.string())
-    .describe('The list of questions already answered.'),
+    .describe("L'elenco delle domande a cui è già stata data una risposta."),
   screeningSection: z
     .string()
-    .describe('The current screening section being addressed.'),
+    .describe('La sezione di screening corrente in esame.'),
 });
 export type SuggestAdditionalQuestionsInput = z.infer<
   typeof SuggestAdditionalQuestionsInputSchema
@@ -29,7 +29,7 @@ export type SuggestAdditionalQuestionsInput = z.infer<
 const SuggestAdditionalQuestionsOutputSchema = z.object({
   suggestedQuestions: z
     .array(z.string())
-    .describe('The list of suggested questions to ask.'),
+    .describe("L'elenco delle domande suggerite da porre."),
 });
 export type SuggestAdditionalQuestionsOutput = z.infer<
   typeof SuggestAdditionalQuestionsOutputSchema
@@ -45,21 +45,21 @@ const prompt = ai.definePrompt({
   name: 'suggestAdditionalQuestionsPrompt',
   input: {schema: SuggestAdditionalQuestionsInputSchema},
   output: {schema: SuggestAdditionalQuestionsOutputSchema},
-  prompt: `You are an AI assistant helping doctors to conduct a comprehensive anamnesis.
+  prompt: `Sei un assistente AI che aiuta i medici a condurre un'anamnesi completa.
 
-  Based on the current transcript, the questions already answered, and the current screening section, suggest additional questions to ask.
+  Sulla base della trascrizione corrente, delle domande a cui è già stata data risposta e della sezione di screening corrente, suggerisci ulteriori domande da porre.
 
-  Current Transcript:
+  Trascrizione corrente:
   {{transcript}}
 
-  Answered Questions:
+  Domande con risposta:
   {{#each answeredQuestions}}- {{this}}\n{{/each}}
 
-  Current Screening Section:
+  Sezione di screening corrente:
   {{screeningSection}}
 
-  Suggested Questions:
-  `, //Ensure prompt is closed
+  Domande suggerite:
+  `,
 });
 
 const suggestAdditionalQuestionsFlow = ai.defineFlow(

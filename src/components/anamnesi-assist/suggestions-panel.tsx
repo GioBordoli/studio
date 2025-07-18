@@ -16,7 +16,7 @@ export function SuggestionsPanel({ suggestions, isLoading }: SuggestionsPanelPro
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
             <Lightbulb className="h-5 w-5" />
-            Suggested Questions
+            Domande Suggerite
         </CardTitle>
         {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
       </CardHeader>
@@ -40,7 +40,7 @@ export function SuggestionsPanel({ suggestions, isLoading }: SuggestionsPanelPro
           </ul>
         ) : (
           <div className="text-center text-muted-foreground py-8">
-            <p>No suggestions at the moment.</p>
+            <p>Nessun suggerimento al momento.</p>
           </div>
         )}
       </CardContent>
