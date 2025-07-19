@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'transcribeAudioPrompt',
   input: {schema: TranscribeAudioInputSchema},
   output: {schema: TranscribeAudioOutputSchema},
-  prompt: `Transcribe the following audio:\n\n{{media url=audioDataUri}}`,
+  prompt: `Trascrivi il seguente audio in italiano:\n\n{{media url=audioDataUri}}`,
 });
 
 const transcribeAudioFlow = ai.defineFlow(
