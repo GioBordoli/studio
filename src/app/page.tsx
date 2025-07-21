@@ -63,28 +63,31 @@ export default function Home() {
     if (currentTranscript.trim().length === 0) return;
 
     setLoading((prev) => ({ ...prev, qa: true, suggest: true }));
-    try {
-      const qaPromise = identifyQuestionsAndAnswers({
-        transcription: currentTranscript,
-      });
-      const suggestionsPromise = suggestAdditionalQuestions({
-        transcript: currentTranscript,
-        answeredQuestions: qaPairs.map((qa) => qa.question),
-        screeningSection: "Generale", // Placeholder for dynamic section
-      });
 
-      const [qaResult, suggestionsResult] = await Promise.all([
-        qaPromise,
-        suggestionsPromise,
-      ]);
+    const qaPromise = identifyQuestionsAndAnswers({
+      transcription: currentTranscript,
+    }).then(result => {
+      setQaPairs(result);
+      setLoading((prev) => ({ ...prev, qa: false }));
+    }).catch(error => {
+      console.error("Error identifying Q&A:", error);
+      setLoading((prev) => ({ ...prev, qa: false }));
+    });
 
-      setQaPairs(qaResult);
-      setSuggestions(suggestionsResult.suggestedQuestions);
-    } catch (error) {
-      console.error("Error analyzing transcript:", error);
-    } finally {
-      setLoading((prev) => ({ ...prev, qa: false, suggest: false }));
-    }
+    const suggestionsPromise = suggestAdditionalQuestions({
+      transcript: currentTranscript,
+      answeredQuestions: qaPairs.map((qa) => qa.question),
+      screeningSection: "Generale",
+    }).then(result => {
+      setSuggestions(result.suggestedQuestions);
+      setLoading((prev) => ({ ...prev, suggest: false }));
+    }).catch(error => {
+      console.error("Error suggesting questions:", error);
+      setLoading((prev) => ({ ...prev, suggest: false }));
+    });
+    
+    await Promise.allSettled([qaPromise, suggestionsPromise]);
+
   }, [qaPairs]);
 
   const handleAudioChunk = useCallback(async (audioBlob: Blob) => {
@@ -96,18 +99,23 @@ export default function Home() {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64data = reader.result as string;
-        const result = await transcribeAudio({ audioDataUri: base64data });
-        if (result.transcription) {
-          fullTranscriptRef.current += result.transcription + " ";
-          setTranscript(fullTranscriptRef.current);
-          await analyzeTranscript(fullTranscriptRef.current);
+        try {
+          const result = await transcribeAudio({ audioDataUri: base64data });
+          if (result.transcription) {
+            fullTranscriptRef.current += result.transcription + " ";
+            setTranscript(fullTranscriptRef.current);
+            await analyzeTranscript(fullTranscriptRef.current);
+          }
+        } catch (error) {
+           console.error("Error transcribing audio:", error);
+        } finally {
+          setLoading(prev => ({ ...prev, transcribe: false }));
         }
       };
       reader.readAsDataURL(audioBlob);
     } catch (error) {
-      console.error("Error transcribing audio:", error);
-    } finally {
-        setLoading(prev => ({ ...prev, transcribe: false }));
+      console.error("Error reading audio blob:", error);
+      setLoading(prev => ({ ...prev, transcribe: false }));
     }
   }, [isRecording, analyzeTranscript]);
 
