@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 interface TranscriptionViewProps {
-  transcript: string[];
+  transcript: string;
   isRecording: boolean;
   isLoading: boolean;
 }
@@ -35,9 +35,7 @@ export function TranscriptionView({ transcript, isRecording, isLoading }: Transc
             </div>
           )}
           <p className="whitespace-pre-wrap leading-relaxed">
-            {transcript.map((chunk, index) => (
-              <span key={index}>{chunk} </span>
-            ))}
+            {transcript}
           </p>
         </ScrollArea>
       </CardContent>

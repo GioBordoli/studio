@@ -17,7 +17,7 @@ import { Loader2 } from "lucide-react";
 
 export default function Home() {
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState<string[]>([]);
+  const [transcript, setTranscript] = useState<string>("");
   const [qaPairs, setQaPairs] = useState<QuestionAnswerPair[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [documentText, setDocumentText] = useState("");
@@ -32,7 +32,7 @@ export default function Home() {
   const fullTranscriptRef = useRef("");
 
   const handleStartRecording = () => {
-    setTranscript([]);
+    setTranscript("");
     setQaPairs([]);
     setSuggestions([]);
     setDocumentText("");
@@ -98,8 +98,8 @@ export default function Home() {
         const base64data = reader.result as string;
         const result = await transcribeAudio({ audioDataUri: base64data });
         if (result.transcription) {
-          setTranscript((prev) => [...prev, result.transcription]);
           fullTranscriptRef.current += result.transcription + " ";
+          setTranscript(fullTranscriptRef.current);
           await analyzeTranscript(fullTranscriptRef.current);
         }
       };
