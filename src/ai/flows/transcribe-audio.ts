@@ -10,12 +10,13 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {googleAI} from '@genkit-ai/googleai';
 
 const TranscribeAudioInputSchema = z.object({
   audioDataUri: z
     .string()
     .describe(
-      "The audio data as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "The audio data as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'"
     ),
 });
 export type TranscribeAudioInput = z.infer<typeof TranscribeAudioInputSchema>;
@@ -33,6 +34,7 @@ const prompt = ai.definePrompt({
   name: 'transcribeAudioPrompt',
   input: {schema: TranscribeAudioInputSchema},
   output: {schema: TranscribeAudioOutputSchema},
+  model: googleAI.model('gemini-1.5-flash'),
   prompt: `Per favore, trascrivi il seguente audio in italiano. Audio da trascrivere:\n\n{{media url=audioDataUri}}`,
 });
 
