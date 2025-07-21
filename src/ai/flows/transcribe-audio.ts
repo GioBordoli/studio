@@ -34,7 +34,7 @@ const prompt = ai.definePrompt({
   name: 'transcribeAudioPrompt',
   input: { schema: TranscribeAudioInputSchema },
   output: { schema: TranscribeAudioOutputSchema },
-  model: googleAI.model('gemini-2.0-flash'),
+  model: googleAI.model('gemini-1.5-flash-latest'),
   prompt: `Per favore, trascrivi il seguente audio in italiano. Audio da trascrivere:\n\n{{media url=audioDataUri}}`,
 });
 

@@ -1,6 +1,6 @@
-"use client";
+use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { QuestionAnswerPair } from "@/types";
 import { Header } from "@/components/anamnesi-assist/header";
 import { AudioRecorder } from "@/components/anamnesi-assist/audio-recorder";
@@ -13,6 +13,8 @@ import { identifyQuestionsAndAnswers } from "@/ai/flows/identify-questions-and-a
 import { suggestAdditionalQuestions } from "@/ai/flows/suggest-additional-questions";
 import { formatMedicalDocument } from "@/ai/flows/format-medical-document";
 import { Loader2 } from "lucide-react";
+
+const TRANSCRIPTION_INTERVAL = 2000; // 2 seconds
 
 export default function Home() {
   const [isRecording, setIsRecording] = useState(false);
@@ -29,6 +31,38 @@ export default function Home() {
   });
 
   const fullTranscriptRef = useRef("");
+  const audioChunksRef = useRef<Blob[]>([]);
+  const transcriptionTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const processAndTranscribeAudio = useCallback(async () => {
+    if (audioChunksRef.current.length === 0) return;
+
+    setLoading((prev) => ({ ...prev, transcribe: true }));
+    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+    audioChunksRef.current = [];
+
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64data = reader.result as string;
+        try {
+          const result = await transcribeAudio({ audioDataUri: base64data });
+          if (result.transcription) {
+            fullTranscriptRef.current += result.transcription + " ";
+            setTranscript(fullTranscriptRef.current);
+          }
+        } catch (error) {
+          console.error("Error transcribing audio:", error);
+        } finally {
+          setLoading((prev) => ({ ...prev, transcribe: false }));
+        }
+      };
+      reader.readAsDataURL(audioBlob);
+    } catch (error) {
+      console.error("Error reading audio blob:", error);
+      setLoading((prev) => ({ ...prev, transcribe: false }));
+    }
+  }, []);
 
   const handleStartRecording = () => {
     setTranscript("");
@@ -36,6 +70,10 @@ export default function Home() {
     setSuggestions([]);
     setDocumentText("");
     fullTranscriptRef.current = "";
+    audioChunksRef.current = [];
+    if (transcriptionTimerRef.current) {
+      clearTimeout(transcriptionTimerRef.current);
+    }
     setIsRecording(true);
   };
 
@@ -82,36 +120,36 @@ export default function Home() {
 
   const handleStopRecording = async () => {
     setIsRecording(false);
+    if (transcriptionTimerRef.current) {
+      clearTimeout(transcriptionTimerRef.current);
+    }
+    await processAndTranscribeAudio(); // Process any remaining audio
     await analyzeFinalTranscript();
   };
 
-  const handleAudioChunk = useCallback(async (audioBlob: Blob) => {
-    if (!isRecording) return;
-    
-    setLoading((prev) => ({ ...prev, transcribe: true }));
-    
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        try {
-          const result = await transcribeAudio({ audioDataUri: base64data });
-          if (result.transcription) {
-            fullTranscriptRef.current += result.transcription + " ";
-            setTranscript(fullTranscriptRef.current);
-          }
-        } catch (error) {
-           console.error("Error transcribing audio:", error);
-        } finally {
-          setLoading(prev => ({ ...prev, transcribe: false }));
-        }
-      };
-      reader.readAsDataURL(audioBlob);
-    } catch (error) {
-      console.error("Error reading audio blob:", error);
-      setLoading(prev => ({ ...prev, transcribe: false }));
-    }
-  }, [isRecording]);
+  const handleAudioChunk = useCallback(
+    (audioBlob: Blob) => {
+      if (!isRecording) return;
+
+      audioChunksRef.current.push(audioBlob);
+
+      if (!transcriptionTimerRef.current) {
+        transcriptionTimerRef.current = setTimeout(() => {
+          transcriptionTimerRef.current = null;
+          processAndTranscribeAudio();
+        }, TRANSCRIPTION_INTERVAL);
+      }
+    },
+    [isRecording, processAndTranscribeAudio]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (transcriptionTimerRef.current) {
+        clearTimeout(transcriptionTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -125,11 +163,18 @@ export default function Home() {
               onStop={handleStopRecording}
               onAudioChunk={handleAudioChunk}
             />
-            <TranscriptionView transcript={transcript} isRecording={isRecording} isLoading={loading.transcribe} />
+            <TranscriptionView
+              transcript={transcript}
+              isRecording={isRecording}
+              isLoading={loading.transcribe}
+            />
           </div>
           <div className="flex flex-col gap-6">
             <QaPanel qaPairs={qaPairs} isLoading={loading.qa} />
-            <SuggestionsPanel suggestions={suggestions} isLoading={loading.suggest} />
+            <SuggestionsPanel
+              suggestions={suggestions}
+              isLoading={loading.suggest}
+            />
           </div>
         </div>
       </main>
