@@ -61,7 +61,8 @@ export function AudioRecorder({ isRecording, onStart, onStop, onAudioChunk }: Au
       analyserRef.current.fftSize = 256;
       dataArrayRef.current = new Uint8Array(analyserRef.current.frequencyBinCount);
       
-      const recorder = new MediaRecorder(stream);
+      const options = { mimeType: 'audio/webm' };
+      const recorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = recorder;
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
