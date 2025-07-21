@@ -32,9 +32,9 @@ export async function transcribeAudio(input: TranscribeAudioInput): Promise<Tran
 
 const prompt = ai.definePrompt({
   name: 'transcribeAudioPrompt',
-  input: {schema: TranscribeAudioInputSchema},
-  output: {schema: TranscribeAudioOutputSchema},
-  model: googleAI.model('gemini-1.5-flash'),
+  input: { schema: TranscribeAudioInputSchema },
+  output: { schema: TranscribeAudioOutputSchema },
+  model: googleAI.model('gemini-2.0-flash'),
   prompt: `Per favore, trascrivi il seguente audio in italiano. Audio da trascrivere:\n\n{{media url=audioDataUri}}`,
 });
 

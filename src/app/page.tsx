@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { QuestionAnswerPair } from "@/types";
 import { Header } from "@/components/anamnesi-assist/header";
 import { AudioRecorder } from "@/components/anamnesi-assist/audio-recorder";
@@ -8,7 +8,6 @@ import { TranscriptionView } from "@/components/anamnesi-assist/transcription-vi
 import { QaPanel } from "@/components/anamnesi-assist/qa-panel";
 import { SuggestionsPanel } from "@/components/anamnesi-assist/suggestions-panel";
 import { DocumentView } from "@/components/anamnesi-assist/document-view";
-import { Button } from "@/components/ui/button";
 import { transcribeAudio } from "@/ai/flows/transcribe-audio";
 import { identifyQuestionsAndAnswers } from "@/ai/flows/identify-questions-and-answers";
 import { suggestAdditionalQuestions } from "@/ai/flows/suggest-additional-questions";
@@ -40,55 +39,51 @@ export default function Home() {
     setIsRecording(true);
   };
 
-  const handleStopRecording = async () => {
-    setIsRecording(false);
-    if (qaPairs.length > 0) {
-      setLoading((prev) => ({ ...prev, document: true }));
-      try {
-        const interviewData = qaPairs
+  const analyzeFinalTranscript = async () => {
+    if (fullTranscriptRef.current.trim().length === 0) return;
+
+    setLoading((prev) => ({ ...prev, qa: true, suggest: true, document: true }));
+
+    try {
+      // Identify Q&A
+      const qaResult = await identifyQuestionsAndAnswers({
+        transcription: fullTranscriptRef.current,
+      });
+      setQaPairs(qaResult);
+
+      // Suggest Questions
+      const suggestionsResult = await suggestAdditionalQuestions({
+        transcript: fullTranscriptRef.current,
+        answeredQuestions: qaResult.map((qa) => qa.question),
+        screeningSection: "Generale",
+      });
+      setSuggestions(suggestionsResult.suggestedQuestions);
+
+      // Format Document if Q&A was found
+      if (qaResult.length > 0) {
+        const interviewData = qaResult
           .map((qa) => `D: ${qa.question}\nR: ${qa.answer}`)
           .join("\n\n");
-        const result = await formatMedicalDocument({ interviewData });
-        setDocumentText(result.formattedDocument);
+        const documentResult = await formatMedicalDocument({ interviewData });
+        setDocumentText(documentResult.formattedDocument);
         setIsDocumentOpen(true);
-      } catch (error) {
-        console.error("Error formatting document:", error);
-      } finally {
-        setLoading((prev) => ({ ...prev, document: false }));
       }
+    } catch (error) {
+      console.error("Error during final analysis:", error);
+    } finally {
+      setLoading({
+        transcribe: false,
+        qa: false,
+        suggest: false,
+        document: false,
+      });
     }
   };
 
-  const analyzeTranscript = useCallback(async (currentTranscript: string) => {
-    if (currentTranscript.trim().length === 0) return;
-
-    setLoading((prev) => ({ ...prev, qa: true, suggest: true }));
-
-    const qaPromise = identifyQuestionsAndAnswers({
-      transcription: currentTranscript,
-    }).then(result => {
-      setQaPairs(result);
-      setLoading((prev) => ({ ...prev, qa: false }));
-    }).catch(error => {
-      console.error("Error identifying Q&A:", error);
-      setLoading((prev) => ({ ...prev, qa: false }));
-    });
-
-    const suggestionsPromise = suggestAdditionalQuestions({
-      transcript: currentTranscript,
-      answeredQuestions: qaPairs.map((qa) => qa.question),
-      screeningSection: "Generale",
-    }).then(result => {
-      setSuggestions(result.suggestedQuestions);
-      setLoading((prev) => ({ ...prev, suggest: false }));
-    }).catch(error => {
-      console.error("Error suggesting questions:", error);
-      setLoading((prev) => ({ ...prev, suggest: false }));
-    });
-    
-    await Promise.allSettled([qaPromise, suggestionsPromise]);
-
-  }, [qaPairs]);
+  const handleStopRecording = async () => {
+    setIsRecording(false);
+    await analyzeFinalTranscript();
+  };
 
   const handleAudioChunk = useCallback(async (audioBlob: Blob) => {
     if (!isRecording) return;
@@ -104,7 +99,6 @@ export default function Home() {
           if (result.transcription) {
             fullTranscriptRef.current += result.transcription + " ";
             setTranscript(fullTranscriptRef.current);
-            await analyzeTranscript(fullTranscriptRef.current);
           }
         } catch (error) {
            console.error("Error transcribing audio:", error);
@@ -117,7 +111,7 @@ export default function Home() {
       console.error("Error reading audio blob:", error);
       setLoading(prev => ({ ...prev, transcribe: false }));
     }
-  }, [isRecording, analyzeTranscript]);
+  }, [isRecording]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -141,10 +135,10 @@ export default function Home() {
       </main>
       <footer className="container mx-auto p-4 text-center text-muted-foreground text-sm">
         <p>AnamnesiAssist - Il tuo assistente medico basato sull'IA.</p>
-        {loading.document && (
+        {(loading.document || loading.qa || loading.suggest) && (
           <div className="flex items-center justify-center mt-2">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <span>Generazione del documento in corso...</span>
+            <span>Analisi e generazione del documento in corso...</span>
           </div>
         )}
       </footer>
