@@ -32,7 +32,10 @@ const prompt = ai.definePrompt({
   name: 'identifyQuestionsAndAnswersPrompt',
   input: {schema: IdentifyQuestionsAndAnswersInputSchema},
   output: {schema: IdentifyQuestionsAndAnswersOutputSchema},
-  prompt: `Sei un esperto di IA in anamnesi medica. Il tuo compito è analizzare la trascrizione data di una conversazione medico-paziente e identificare le domande poste dal medico e le corrispondenti risposte date dal paziente. Categorizza ogni coppia domanda-risposta in sezioni di screening medico pertinenti (es. storia medica, sintomi attuali, allergie, farmaci, storia familiare, storia sociale). Restituisci un array JSON di coppie domanda-risposta, ognuna includendo la domanda, la risposta e la categoria determinata. Assicurati che il JSON sia valido e analizzabile.
+  prompt: `Sei un dottore esperto di anamnesi medica. Il tuo compito è analizzare la trascrizione data di una conversazione medico-paziente e identificare le domande poste dal medico e le corrispondenti risposte date dal paziente. 
+  Categorizza ogni coppia domanda-risposta in sezioni di screening medico pertinenti (es. storia medica, sintomi attuali, allergie, farmaci, storia familiare, storia sociale). 
+  Restituisci un array JSON di coppie domanda-risposta, ognuna includendo la domanda, la risposta e la categoria determinata. 
+  Assicurati che il JSON sia valido e analizzabile.
 
 Trascrizione:
 {{{transcription}}}`,
